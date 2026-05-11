@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>深蹲打怪 - SQUAT HERO v2.0</title>
-    <!-- MediaPipe 核心與工具 -->
+    <title>深蹲打怪 - SQUAT HERO v3.0</title>
+    <!-- MediaPipe 核心 -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -40,7 +40,6 @@
             filter: blur(120px); opacity: 0.15; z-index: -1;
         }
 
-        /* --- 按鈕與輸入框 --- */
         .btn { 
             width: 200px; padding: 15px; background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
             border: none; border-radius: 50px; font-weight: bold; font-size: 18px; color: white;
@@ -54,26 +53,16 @@
             color: white; font-size: 18px; text-align: center; margin-bottom: 20px;
             outline: none; transition: 0.3s;
         }
-        input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
 
-        /* --- 遊戲核心畫面 --- */
-        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        /* --- 遊戲主畫面 --- */
+        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .player-info { display: flex; align-items: center; gap: 10px; }
-        .avatar-circle { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .avatar-circle { width: 35px; height: 35px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
-        .camera-section { flex: 1; position: relative; border-radius: 24px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .camera-section { flex: 1; position: relative; border-radius: 24px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); background: #000; }
         video, canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         
-        /* 掃描線效果 */
-        .camera-section::after {
-            content: ""; position: absolute; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px; pointer-events: none; z-index: 2;
-        }
-
-        #hint-display { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); padding: 8px 20px; border-radius: 30px; font-size: 14px; z-index: 10; border: 1px solid var(--accent); white-space: nowrap; }
-
-        /* --- 戰鬥特效與怪物 --- */
+        /* 怪物區域 */
         .monster-area {
             position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
             text-align: center; z-index: 5; pointer-events: none;
@@ -84,30 +73,26 @@
             position: absolute; color: var(--danger); font-weight: 900; font-size: 40px;
             text-shadow: 2px 2px 0px #000; animation: floatUp 0.8s ease-out forwards; z-index: 20;
         }
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(0.8); opacity: 1; }
-            50% { transform: translateY(-50px) scale(1.2); opacity: 1; }
-            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
-        }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
         
-        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        .shake { animation: shake 0.3s both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            30%, 70% { transform: translate3d(-4px, 0, 0); }
+            50% { transform: translate3d(4px, 0, 0); }
         }
 
-        /* --- HUD 數據區 --- */
-        .battle-hud { margin-top: 15px; background: var(--card); border-radius: 24px; padding: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .stat-box { text-align: center; }
-        .stat-box .val { display: block; font-size: 20px; font-weight: bold; color: var(--secondary); }
-        .stat-box .lab { font-size: 10px; color: #64748b; text-transform: uppercase; }
+        #hint-display { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); padding: 8px 20px; border-radius: 30px; font-size: 14px; z-index: 10; border: 1px solid var(--accent); }
 
-        .hp-container { margin-bottom: 5px; }
-        .hp-bar { height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-        #hp-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* HUD */
+        .battle-hud { margin-top: 15px; background: var(--card); border-radius: 24px; padding: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+        .stat-box { text-align: center; }
+        .stat-box .val { display: block; font-size: 18px; font-weight: bold; color: var(--secondary); }
+        .stat-box .lab { font-size: 10px; color: #64748b; }
+
+        .hp-bar { height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; position: relative; }
+        #hp-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: 0.3s ease-out; }
     </style>
 </head>
 <body>
@@ -115,66 +100,56 @@
     <div class="bg-glow"></div>
 
     <div class="app">
-        <!-- 1. 開始畫面 -->
+        <!-- 畫面 1: 開始 -->
         <section id="start-screen" class="screen active" style="align-items: center; justify-content: center; text-align: center;">
-            <div style="margin-bottom: 50px;">
-                <div style="font-size: 48px; font-weight: 900; letter-spacing: 5px; background: linear-gradient(to bottom, #fff 40%, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">深蹲打怪</div>
-                <div style="font-size: 14px; color: var(--accent); letter-spacing: 2px; margin-top: -10px;">SQUAT HERO ADVENTURE</div>
+            <div style="margin-bottom: 40px;">
+                <h1 style="font-size: 42px; margin: 0;">深蹲打怪</h1>
+                <p style="color: var(--accent);">SQUAT HERO ADVENTURE</p>
             </div>
-            <button id="to-name-btn" class="btn">點擊開始</button>
+            <button id="to-name-btn" class="btn">開始冒險</button>
         </section>
 
-        <!-- 2. 名字輸入畫面 -->
+        <!-- 畫面 2: 輸入姓名 -->
         <section id="name-screen" class="screen" style="align-items: center; justify-content: center;">
-            <h2 style="margin-bottom: 30px; letter-spacing: 2px;">創立勇者身份</h2>
-            <div style="width: 100%; max-width: 300px;">
-                <input type="text" id="player-name-input" placeholder="輸入你的勇者名字..." maxlength="10">
-                <button id="start-game-btn" class="btn" style="width: 100%;">進入冒險</button>
-            </div>
-            <p style="margin-top: 20px; color: #64748b; font-size: 12px;">※ 需開啟相機權限以進行全身偵測</p>
+            <h2 style="margin-bottom: 20px;">勇者尊姓大名？</h2>
+            <input type="text" id="player-name-input" placeholder="請輸入..." maxlength="10">
+            <button id="start-game-btn" class="btn">出發</button>
         </section>
 
-        <!-- 3. 遊戲主畫面 -->
+        <!-- 畫面 3: 遊戲主畫面 -->
         <section id="game-screen" class="screen">
             <div class="game-header">
                 <div class="player-info">
-                    <div class="avatar-circle">🛡️</div>
+                    <div class="avatar-circle">⚔️</div>
                     <div>
-                        <div id="display-name" style="font-weight: bold; font-size: 16px;">勇者</div>
-                        <div style="font-size: 10px; color: var(--accent);">LV. <span id="ui-lv">1</span> 深蹲冒險者</div>
+                        <div id="display-name" style="font-weight: bold;">勇者</div>
+                        <div style="font-size: 10px; color: var(--accent);">LV. <span id="ui-lv">1</span> 冒險者</div>
                     </div>
                 </div>
-                <div style="text-align: right;">
-                    <span id="ui-stage" style="color: var(--secondary); font-weight: bold;">STAGE 1</span>
-                </div>
+                <div id="ui-stage" style="color: var(--secondary); font-weight: bold; font-size: 20px;">STAGE 1</div>
             </div>
 
             <div class="camera-section">
-                <!-- 怪物圖層 -->
                 <div class="monster-area">
                     <div id="monster-sprite">👾</div>
-                    <div id="monster-name" style="font-size: 12px; color: var(--danger); font-weight: bold; margin-top: 5px; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 10px;">BOSS</div>
+                    <div id="monster-name" style="font-size: 12px; color: var(--danger); font-weight: bold; margin-top: 5px;">ENEMY</div>
                 </div>
-                
                 <video id="webcam" playsinline muted autoplay></video>
                 <canvas id="output_canvas"></canvas>
-                <div id="hint-display">讀取中...</div>
+                <div id="hint-display">準備中...</div>
             </div>
 
             <div class="battle-hud">
                 <div class="stats-row">
-                    <div class="stat-box"><span class="lab">Score</span><span id="ui-score" class="val">0</span></div>
-                    <div class="stat-box"><span class="lab">Squats</span><span id="ui-count" class="val">0</span></div>
-                    <div class="stat-box"><span class="lab">Power</span><span id="ui-power" class="val">100%</span></div>
+                    <div class="stat-box"><span class="lab">SCORE</span><span id="ui-score" class="val">0</span></div>
+                    <div class="stat-box"><span class="lab">TOTAL SQUATS</span><span id="ui-count" class="val">0</span></div>
+                    <div class="stat-box"><span class="lab">LV</span><span id="ui-lv-display" class="val">1</span></div>
                 </div>
-                
-                <div class="hp-container">
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px;">
-                        <span style="letter-spacing: 1px;">ENEMY HP</span>
-                        <span id="hp-text">100/100</span>
-                    </div>
-                    <div class="hp-bar"><div id="hp-fill"></div></div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">
+                    <span id="monster-label">BOSS HP</span>
+                    <span id="hp-text">還差 5 下</span>
                 </div>
+                <div class="hp-bar"><div id="hp-fill"></div></div>
             </div>
         </section>
     </div>
@@ -185,9 +160,10 @@
             name: "勇者",
             stage: 1, 
             score: 0, 
-            count: 0, 
-            hp: 100, 
-            maxHp: 100,
+            totalCount: 0, 
+            currentStageSquats: 0,
+            targetSquats: 5,
+            hp: 100,
             isSquatting: false 
         };
 
@@ -195,6 +171,7 @@
         const hint = document.getElementById('hint-display');
         const sprite = document.getElementById('monster-sprite');
 
+        // 初始化 Pose 偵測
         const pose = new Pose({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
         });
@@ -206,6 +183,7 @@
             minTrackingConfidence: 0.6
         });
 
+        // 螢幕切換
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -215,13 +193,11 @@
 
         document.getElementById('start-game-btn').onclick = async function() {
             const inputName = document.getElementById('player-name-input').value.trim();
-            if(!inputName) {
-                alert("請輸入勇者尊姓大名！");
-                return;
-            }
+            if(!inputName) return alert("請輸入名字！");
             state.name = inputName;
             document.getElementById('display-name').innerText = state.name;
             showScreen('game-screen');
+            setupStage(1);
             startCamera();
         };
 
@@ -233,12 +209,74 @@
             camera.start();
         }
 
+        // 難度邏輯
+        function setupStage(stageNum) {
+            state.currentStageSquats = 0;
+            state.hp = 100;
+            
+            if (stageNum === 1) {
+                state.targetSquats = 5;
+            } else if (stageNum <= 5) {
+                // 漸多隨機: 第2關(8-12), 第3關(13-18), 第4關(19-24), 第5關(25-30)
+                const minRange = [0, 5, 8, 13, 19, 25]; 
+                const maxRange = [0, 5, 12, 18, 24, 30];
+                state.targetSquats = Math.floor(Math.random() * (maxRange[stageNum] - minRange[stageNum] + 1)) + minRange[stageNum];
+            } else {
+                state.targetSquats = 30 + (stageNum - 5) * 5; // 5關後的無限模式
+            }
+
+            sprite.innerText = monsters[(stageNum - 1) % monsters.length];
+            document.getElementById('monster-label').innerText = stageNum === 5 ? "FINAL BOSS" : `BOSS STAGE ${stageNum}`;
+            updateUI();
+        }
+
+        // 攻擊動作
+        function attack() {
+            state.totalCount++;
+            state.currentStageSquats++;
+            state.score += (100 * state.stage);
+
+            const damagePercent = 100 / state.targetSquats;
+            state.hp = Math.max(0, 100 - (state.currentStageSquats * damagePercent));
+
+            sprite.classList.add('shake');
+            showDamage(`-${Math.ceil(damagePercent)}%`);
+            setTimeout(() => sprite.classList.remove('shake'), 300);
+
+            if (state.currentStageSquats >= state.targetSquats) {
+                if (state.stage === 5) {
+                    alert("🏆 恭喜！你已擊敗最終 BOSS！成為深蹲之王！");
+                }
+                state.stage++;
+                setupStage(state.stage);
+            } else {
+                updateUI();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('ui-stage').innerText = `STAGE ${state.stage}`;
+            document.getElementById('ui-score').innerText = state.score.toLocaleString();
+            document.getElementById('ui-count').innerText = state.totalCount;
+            const level = Math.floor(state.totalCount / 5) + 1;
+            document.getElementById('ui-lv').innerText = level;
+            document.getElementById('ui-lv-display').innerText = level;
+            
+            document.getElementById('hp-fill').style.width = state.hp + "%";
+            document.getElementById('hp-text').innerText = `還差 ${state.targetSquats - state.currentStageSquats} 下`;
+            
+            const fill = document.getElementById('hp-fill');
+            if (state.hp < 30) fill.style.background = "#ff4757";
+            else if (state.hp < 60) fill.style.background = "#facc15";
+            else fill.style.background = "linear-gradient(90deg, #4ade80, #00d2ff)";
+        }
+
+        // 偵測結果處理
         pose.onResults((results) => {
             const canvas = document.getElementById('output_canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-
             ctx.save();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -247,25 +285,20 @@
                 const hip = landmarks[23];
                 const knee = landmarks[25];
                 const ankle = landmarks[27];
-
-                // 判斷關節可見度 (0.5 為門檻)
                 const isVisible = knee.visibility > 0.5 && ankle.visibility > 0.5;
 
                 if (!isVisible) {
-                    hint.innerText = "⚠️ 請往後退，拍到膝蓋與腳踝";
-                    hint.style.borderColor = "#ff4757";
-                    drawConnectors(ctx, landmarks, POSE_CONNECTIONS, {color: '#ff4757', lineWidth: 2});
+                    hint.innerText = "⚠️ 請往後退，讓鏡頭拍到膝蓋";
+                    hint.style.color = "#ff4757";
                 } else {
-                    hint.style.borderColor = "#4ade80";
-                    drawConnectors(ctx, landmarks, POSE_CONNECTIONS, {color: '#4ade80', lineWidth: 4});
+                    hint.style.color = "white";
+                    drawConnectors(ctx, landmarks, POSE_CONNECTIONS, {color: '#00d2ff', lineWidth: 4});
                     
                     const angle = calculateAngle(hip, knee, ankle);
-                    
-                    // 偵測邏輯：小於 115 度為蹲下，大於 155 度為站起攻擊
                     if (angle < 115 && !state.isSquatting) {
                         state.isSquatting = true;
-                        hint.innerText = "✨ 蓄力中... 快站起來攻擊！";
-                        sprite.style.transform = "scale(0.8)"; // 蓄力縮小
+                        hint.innerText = "✨ 蓄力中... 站起來攻擊！";
+                        sprite.style.transform = "scale(0.8)";
                     } else if (angle > 155 && state.isSquatting) {
                         state.isSquatting = false;
                         sprite.style.transform = "scale(1)";
@@ -274,30 +307,15 @@
                         hint.innerText = "💪 準備深蹲！";
                     }
                 }
-            } else {
-                hint.innerText = "❌ 偵測不到勇者";
             }
             ctx.restore();
         });
 
-        function attack() {
-            state.count++;
-            state.score += 150;
-            state.hp -= 25;
-            
-            // 怪物抖動與傷害數字
-            sprite.classList.add('shake');
-            showDamage("-25");
-            setTimeout(() => sprite.classList.remove('shake'), 300);
-
-            if (state.hp <= 0) {
-                state.stage++;
-                state.hp = 100;
-                // 切換怪物 Emoji
-                sprite.innerText = monsters[state.stage % monsters.length];
-                hint.innerText = "🎉 擊敗 BOSS！關卡升級！";
-            }
-            updateUI();
+        function calculateAngle(A, B, C) {
+            let rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
+            let ang = Math.abs(rad * 180.0 / Math.PI);
+            if (ang > 180.0) ang = 360 - ang;
+            return ang;
         }
 
         function showDamage(text) {
@@ -305,32 +323,10 @@
             const div = document.createElement('div');
             div.className = 'damage-popup';
             div.innerText = text;
-            div.style.left = (40 + Math.random() * 20) + "%";
-            div.style.top = "30%";
+            div.style.left = "45%";
+            div.style.top = "25%";
             container.appendChild(div);
             setTimeout(() => div.remove(), 800);
-        }
-
-        function updateUI() {
-            document.getElementById('ui-stage').innerText = `STAGE ${state.stage}`;
-            document.getElementById('ui-score').innerText = state.score.toLocaleString();
-            document.getElementById('ui-count').innerText = state.count;
-            document.getElementById('ui-lv').innerText = Math.floor(state.count / 5) + 1;
-            document.getElementById('hp-fill').style.width = state.hp + "%";
-            document.getElementById('hp-text').innerText = `${state.hp}/100`;
-
-            // 血條顏色變化
-            const fill = document.getElementById('hp-fill');
-            if (state.hp < 30) fill.style.background = "#ff4757";
-            else if (state.hp < 60) fill.style.background = "#facc15";
-            else fill.style.background = "linear-gradient(90deg, #4ade80, #00d2ff)";
-        }
-
-        function calculateAngle(A, B, C) {
-            let rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
-            let ang = Math.abs(rad * 180.0 / Math.PI);
-            if (ang > 180.0) ang = 360 - ang;
-            return ang;
         }
     </script>
 </body>
